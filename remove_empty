@@ -1,0 +1,72 @@
+# Remove empty files and folder
+import os
+import datetime
+
+empty_file = []
+empty_folder = []
+
+
+def dfs(path):
+    global empty_file
+    global empty_folder
+    try:
+        files = os.listdir(path)
+    except FileNotFoundError:
+        return
+    if files == []:
+        empty_folder.append(path)
+        return
+    for file in files:
+        file = path + '\\' + file
+        print(file)
+        if os.path.isfile(file):
+            if os.path.getsize(file) == 0:
+                empty_file.append(file)
+        else:
+            try:
+                if os.path.isdir(file):
+                    dfs(file)
+            except PermissionError:
+                pass
+
+
+def remove_empty(path):
+    global empty_file
+    global empty_folder
+    start_time = datetime.datetime.now()
+    dfs(path)
+    end_time = datetime.datetime.now()
+    print('\nFinished! It spent', (end_time - start_time).seconds, 'sec.')
+    print('Empty file(', len(empty_file), 'items ):')
+    for i in empty_file:
+        print('[+]', i)
+    print('Empty folder(', len(empty_folder), 'items ):')
+    for i in empty_folder:
+        print('[+]', i)
+    cmd = input('\nRemove all empty files(y/n):')
+    if cmd == 'y' or cmd == 'Y':
+        num = 0
+        for file in empty_file:
+            try:
+                os.remove(file)
+                num += 1
+                print('[ OK ]', file)
+            except PermissionError:
+                print('[ Failed ]', file)
+        print('Removed ', num, ' empty files.')
+    cmd = input('Remove all empty folders(y/n):')
+    if cmd == 'y' or cmd == 'Y':
+        num = 0
+        for folder in empty_folder:
+            try:
+                os.rmdir(folder)
+                num += 1
+                print('[ OK ]', folder)
+            except FileNotFoundError:
+                print('[ Failed ]', folder)
+        print('Removed ', num, ' empty folders.')
+
+
+if __name__ == '__main__':
+    path = input('Please input the start path:')
+    remove_empty(path)
